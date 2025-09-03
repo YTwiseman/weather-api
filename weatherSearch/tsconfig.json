@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "outDir": "dist",           // コンパイル結果の出力先
+    "rootDir": "src",           // ソースコードのルート
+    "strict": true,             // 厳格な型チェック
+    "esModuleInterop": true,
+    "removeComments": true
+  },
+  "include": ["src/**/*"]
+}
