@@ -1,0 +1,57 @@
+name: Deploy to AWS ECS Fargate
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1️⃣ コードをフル履歴でチェックアウト
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    # 2️⃣ Node.js 環境セットアップ
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+
+    # 3️⃣ デバッグ: weatherSearch の内容確認
+    - name: Debug weatherSearch directory
+      run: |
+        echo "Current working directory:"
+        pwd
+        echo "Files in weatherSearch:"
+        ls -la
+      working-directory: ./weatherSearch
+
+    # 4️⃣ アプリ依存関係インストール & ビルド
+    - name: Build App
+      working-directory: ./weatherSearch
+      run: |
+        npm install
+        npm run build
+
+    # 5️⃣ AWS 認証
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        aws-region: ap-northeast-1
+
+    # 6️⃣ ECR ログイン
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    # 7️⃣ Docker ビルド & プッシュ
+    - name: Build and push Docker image
+      working-directory: ./weatherSearch
+      run: |
+        IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/weatherreposi_
