@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1️⃣ コードをフル履歴でチェックアウト
+    # 1️⃣ コードチェックアウト
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
@@ -22,7 +22,7 @@ jobs:
       with:
         node-version: '20'
 
-    # 3️⃣ デバッグ: weatherSearch の内容確認
+    # 3️⃣ weatherSearch ディレクトリのデバッグ
     - name: Debug weatherSearch directory
       run: |
         echo "Current working directory:"
@@ -54,4 +54,16 @@ jobs:
     - name: Build and push Docker image
       working-directory: ./weatherSearch
       run: |
-        IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/weatherreposi_
+        IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/weatherrepo:latest
+        echo "IMAGE_URI=$IMAGE_URI"
+        docker build -t $IMAGE_URI .
+        docker push $IMAGE_URI
+
+    # 8️⃣ CDK でデプロイ
+    - name: Install CDK and dependencies
+      run: |
+        npm install -g aws-cdk
+        npm ci
+
+    - name: CDK Deploy
+      run: cdk deploy --require-approval never
