@@ -8,6 +8,8 @@
     ],
     "declaration": true,
     "strict": true,
+    "esModuleInterop": true,       // ← ここを true にする
+    "allowSyntheticDefaultImports": true, // 型互換のため
     "noImplicitAny": true,
     "strictNullChecks": true,
     "noImplicitThis": true,
