@@ -24,11 +24,12 @@ jobs:
         cache: 'npm'
 
     # 3️⃣ weatherSearch: 依存関係インストール & ビルド
-    - name: Build App
-      working-directory: ./weatherSearch
-      run: |
-        npm ci
-        npm run build  
+#    - name: Build App
+#      working-directory: ./weatherSearch
+#      run: |
+#        npm ci
+#        npm run build 
+#  こちらウェザーサーチにTSを使ってないから必要なし
 
     # 4️⃣ AWS 認証
     - name: Configure AWS credentials
