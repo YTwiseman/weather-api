@@ -10,28 +10,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1 コードチェックアウト
+    # 1️⃣ コードチェックアウト
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
 
-    # 2️ Node.js 環境セットアップ
+    # 2️⃣ Node.js 環境セットアップ
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '20'
         cache: 'npm'
 
-    # 3️ weatherSearch: 依存関係インストール & ビルド
-#    - name: Build App
-#      working-directory: ./weatherSearch
-#      run: |
-#        npm ci
-#        npm run build 
-#  こちらウェザーサーチにTSを使ってないから必要なし
-
-    # 4️ AWS 認証
+    # 3️⃣ AWS 認証（Personal リポジトリ用に Secrets 経由）
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
@@ -39,24 +31,34 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-northeast-1
 
-    # 5️ ECR ログイン
+    # 4️⃣ ECR ログイン
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
+    # 5️⃣ ECR リポジトリ作成（存在しない場合）
     - name: Create ECR repository if not exists
       run: |
         aws ecr describe-repositories --repository-names weatherrepo || \
         aws ecr create-repository --repository-name weatherrepo --region ap-northeast-1
 
-
-
-    # 6️ Docker ビルド & プッシュ
+    # 6️⃣ Docker ビルド & プッシュ
     - name: Build and push Docker image
       working-directory: ./weatherSearch
       run: |
         IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/weatherrepo:latest
-        echo "IMAGE_URI=$IMAGE_URI"
         docker build -t $IMAGE_URI .
         docker push $IMAGE_URI
-        echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV  
+        echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+
+    # 7️⃣ CDK デプロイ
+    - name: Install CDK
+      run: npm install -g aws-cdk
+
+    - name: Install CDK dependencies
+      working-directory: ./my-cdk-weatherapp
+      run: npm ci
+
+    - name: CDK Deploy
+      working-directory: ./my-cdk-weatherapp
+      run: npx cdk deploy --require-approval never -c image_uri=$IMAGE_URI
