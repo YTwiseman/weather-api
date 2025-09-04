@@ -3,6 +3,7 @@ import { Construct } from 'constructs';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as ecs_patterns from 'aws-cdk-lib/aws-ecs-patterns';
+import * as iam from 'aws-cdk-lib/aws-iam';
 
 export class WeatherApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -19,7 +20,7 @@ export class WeatherApiStack extends cdk.Stack {
     });
 
     // 3. Fargateサービス + ALB を作成 (ECR イメージを参照)
-    new ecs_patterns.ApplicationLoadBalancedFargateService(this, 'WeatherApiService', {
+    const fargateService = new ecs_patterns.ApplicationLoadBalancedFargateService(this, 'WeatherApiService', {
       cluster,
       taskImageOptions: {
         image: ecs.ContainerImage.fromRegistry(
@@ -29,6 +30,19 @@ export class WeatherApiStack extends cdk.Stack {
       },
       publicLoadBalancer: true,
     });
+
+    // 4. Execution Role に ECR pull 権限を付与
+    fargateService.taskDefinition.addToExecutionRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        "ecr:GetAuthorizationToken",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      resources: ["*"],
+    }));
   }
 }
-
