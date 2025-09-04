@@ -28,7 +28,7 @@ jobs:
       working-directory: ./weatherSearch
       run: |
         npm ci
-        npm run build   # TypeScript をコンパイル
+        npm run build  
 
     # 4️⃣ AWS 認証
     - name: Configure AWS credentials
@@ -50,4 +50,4 @@ jobs:
         echo "IMAGE_URI=$IMAGE_URI"
         docker build -t $IMAGE_URI .
         docker push $IMAGE_URI
-        echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV  # CDK で利用可能にする
+        echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV  

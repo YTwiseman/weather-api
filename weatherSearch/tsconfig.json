@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "lib": ["es2022"],
+    "moduleResolution": "Node",
+    "strict": true,
+    "esModuleInterop": true,              // ← 必須
+    "allowSyntheticDefaultImports": true, // 型互換のため
+    "outDir": "dist",
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  },
+  "include": ["**/*.ts"]
+}
