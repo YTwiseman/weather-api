@@ -44,6 +44,13 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
+    - name: Create ECR repository if not exists
+      run: |
+        aws ecr describe-repositories --repository-names weatherrepo || \
+        aws ecr create-repository --repository-name weatherrepo --region ap-northeast-1
+
+
+
     # 6️ Docker ビルド & プッシュ
     - name: Build and push Docker image
       working-directory: ./weatherSearch
