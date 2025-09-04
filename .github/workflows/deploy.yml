@@ -20,50 +20,33 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18'
+        node-version: '20'
+        cache: 'npm'
 
-    # 3️⃣ weatherSearch ディレクトリのデバッグ
-    - name: Debug weatherSearch directory
-      run: |
-        echo "Current working directory:"
-        pwd
-        echo "Files in weatherSearch:"
-        ls -la
-      working-directory: ./weatherSearch
-
-    # 4️⃣ アプリ依存関係インストール & ビルド
+    # 3️⃣ weatherSearch: 依存関係インストール & ビルド
     - name: Build App
       working-directory: ./weatherSearch
       run: |
-        npm install
-        npm run build
+        npm ci
+        npm run build   # TypeScript をコンパイル
 
-    # 5️⃣ AWS 認証
+    # 4️⃣ AWS 認証
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
         role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
         aws-region: ap-northeast-1
 
-    # 6️⃣ ECR ログイン
+    # 5️⃣ ECR ログイン
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
-    # 7️⃣ Docker ビルド & プッシュ
+    # 6️⃣ Docker ビルド & プッシュ
     - name: Build and push Docker image
       working-directory: ./weatherSearch
       run: |
         IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/weatherrepo:latest
         echo "IMAGE_URI=$IMAGE_URI"
         docker build -t $IMAGE_URI .
-        docker push $IMAGE_URI
-
-    # 8️⃣ CDK でデプロイ
-    - name: Install CDK and dependencies
-      run: |
-        npm install -g aws-cdk
-        npm ci
-
-    - name: CDK Deploy
-      run: cdk deploy --require-approval never
+        docker push $IMAG
